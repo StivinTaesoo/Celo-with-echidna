@@ -1,19 +1,20 @@
-# Smart Contract Security Testing on Celo Blockchain with Echidna: A Step-by-Step Guide
+# Smart Contract Security Testing on Celo Blockchain With Echidna: A Step-By-Step Guide
 
 ## Table of Contents
-- [Smart Contract Security Testing on Celo Blockchain with Echidna: A Step-by-Step Guide](#smart-contract-security-testing-on-celo-blockchain-with-echidna-a-step-by-step-guide)
+- [Smart Contract Security Testing on Celo Blockchain With Echidna: A Step-By-Step Guide](#smart-contract-security-testing-on-celo-blockchain-with-echidna-a-step-by-step-guide)
   - [Table of Contents](#table-of-contents)
   - [Introduction](#introduction)
   - [Prerequisites](#prerequisites)
+  - [Requirements](#requirements)
   - [Setting up the Development Environment](#setting-up-the-development-environment)
   - [Create an ERC-20 Token Contract](#create-an-erc-20-token-contract)
-  - [Testing the Contract using Echidna](#testing-the-contract-using-echidna)
+  - [Testing the Contract Using Echidna](#testing-the-contract-using-echidna)
   - [Deploy the Contract](#deploy-the-contract)
   - [Conclusion](#conclusion)
 
 ## Introduction
 
-Smart contracts are self-executing programs that run on blockchain platforms. They can be used to automate various processes, including financial transactions, voting systems, and supply chain management. Smart contracts are immutable and tamper-proof, making them a secure way to automate business processes. However, despite their security features, smart contracts are still vulnerable to bugs and vulnerabilities that can be exploited by attackers.
+[Smart contracts](https://www.ibm.com/topics/smart-contracts) are self-executing programs that run on blockchain platforms. They can be used to automate various processes, including financial transactions, voting systems, and supply chain management. Smart contracts are immutable and tamper-proof, making them a secure way to automate business processes. However, despite their security features, smart contracts are still vulnerable to bugs and vulnerabilities that can be exploited by attackers.
 
 To ensure the security of smart contracts, developers need to test them thoroughly. Testing can help identify vulnerabilities and bugs that could lead to a loss of funds or other damages. And this is where Echidna comes in!
 
@@ -25,13 +26,16 @@ This tutorial will walk you through the process of using Echidna to test the sec
 Before we get started, there are a few prerequisites that you need to have in place:
 - Basic understanding of JavaScript programming language.
 - Basic understanding of Solidity programming language.
-- Basic understanding of how the Celo network and blockchain works.
+- Basic understanding of how the Celo network and the blockchain work.
+
+
+## Requirements
 - Node.js and npm installed on your machine.
 
 ## Setting up the Development Environment
 To get started with developing smart contracts on Celo, you need to set up your development environment. 
 
-Install Node.js and npm: Node.js is a JavaScript runtime built on Chrome's V8 JavaScript engine. npm is a package manager for Node.js. You can download Node.js and npm from the official website: https://nodejs.org/en/download/.
+Install Node.js and npm: Node.js is a JavaScript runtime built on Chrome's V8 JavaScript engine. Npm is a package manager for Node.js. You can download Node.js and npm from the official website: https://nodejs.org/en/download/.
 
 
 ## Create an ERC-20 Token Contract
@@ -41,6 +45,7 @@ Now that you have set up your development environment, you can create an ERC-20 
 For the sake of this tutorial, here is the code for an ERC-20 token contract:
 
 ```solidity
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.8;
 
 contract OxToken {
@@ -59,7 +64,15 @@ contract OxToken {
         totalSupply = _totalSupply;
     }
 
+    /**
+        * @dev Validation checks are performed on the input data to prevent invalid values
+        * @notice Allow users to transfer OXT tokens to an address
+        * @param _to The address of the receiver
+        * @param _value The amount to transfer
+    */
     function transfer(address _to, uint256 _value) public returns (bool success) {
+        require(_to != address(0), "The zero address is not a valid receiver address");
+        require(_value > 0, "Transfer amount should be greater than 0");
         require(balanceOf[msg.sender] >= _value, "Insufficient balance");
         balanceOf[msg.sender] -= _value;
         balanceOf[_to] += _value;
@@ -67,13 +80,28 @@ contract OxToken {
         return true;
     }
 
+    /**
+        * @notice Allow users to approve a spender for a certain amount of OXT tokens
+        * @param _spender The address of the spender
+        * @param _value The amount to approve
+    */
     function approve(address _spender, uint256 _value) public returns (bool success) {
+        require(_value > 0, "Approve amount should be greater than 0");
         allowance[msg.sender][_spender] = _value;
         emit Approval(msg.sender, _spender, _value);
         return true;
     }
 
+     /**
+        * @notice Allows an approved spender to transfer a certain amount of OXT tokens
+        * @param _from The address to spend/transfer OXT tokens from
+        * @param _to The address of the receiver for OXT tokens
+        * @param _value The amount to transfer
+    */
     function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) {
+        require(_from != address(0), "Invalid from address");
+        require(_to != address(0), "Invalid to address");
+        require(_value > 0, "Transfer amount should be greater than 0");
         require(balanceOf[_from] >= _value, "Insufficient balance");
         require(allowance[_from][msg.sender] >= _value, "Insufficient allowance");
         balanceOf[_from] -= _value;
@@ -85,9 +113,9 @@ contract OxToken {
 }
 ```
 
-The smart contract above implements the ERC-20 token standard, which is a popular standard used for creating fungible tokens on the Ethereum blockchain. The ERC-20 standard defines a set of functions and events that a smart contract must implement in order to be considered an ERC-20 compliant token.
+The smart contract above implements the [ERC-20 token standard](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/), which is a popular standard used for creating fungible tokens on the Ethereum blockchain. The ERC-20 standard defines a set of functions and events that a smart contract must implement in order to be considered an ERC-20 compliant token.
 
-The contract defines a public string variable `name` and `symbol` that represent the name and symbol of the token respectively. It also defines a public uint256 variable `totalSupply` that represents the total supply of the token.
+The contract defines a public string variable `name` and `symbol` that represents the name and symbol of the token respectively. It also defines a public uint256 variable `totalSupply` that represents the total supply of the token.
 
 Also, there are two mapping data structures: `balanceOf` and `allowance`. The `balanceOf` mapping maps an address to a uint256 value that represents the balance of that address. The `allowance` mapping maps an address to another mapping, which maps an address to a uint256 value that represents the amount of tokens that the owner of the first address has allowed the second address to spend.
 
@@ -95,17 +123,17 @@ Again, there are two events: `Transfer` and `Approval`. The `Transfer` event is 
 
 The constructor takes a uint256 argument `_totalSupply` and sets the balance of the contract creator to `_totalSupply` and the totalSupply to `_totalSupply`.
 
-The are functions: `transfer`, `approve`, and `transferFrom.` The `transfer` function takes two arguments: an address `_to` and a uint256 `_value`. It transfers `_value` number of tokens from the sender's address to `_to`. The function checks if the sender has sufficient balance before executing the transfer and emits the `Transfer` event.
+They are functions: `transfer`, `approve`, and `transferFrom.` The `transfer` function takes two arguments: an address `_to` and a uint256 `_value`. It transfers the `_value` number of tokens from the sender's address to `_to`. The function checks if the sender has sufficient balance before executing the transfer and emits the `Transfer` event.
 
 The `approve` function takes two arguments: an address `_spender` and a uint256 `_value`. It approves `_spender` to spend `_value ` which is the number of tokens on behalf of the sender. The function emits the `Approval` event.
 
-The `transferFrom` function takes three arguments: an address `_from`, an address `_to`, and a uint256 `_value`. It transfers `_value`  - number of tokens from `_from `to `_to` on behalf of the sender. The function checks if `_from` has sufficient balance and if the sender has sufficient allowance before executing the transfer and emits the `Transfer` event.
+The `transferFrom` function takes three arguments: an address `_from`, an address `_to`, and a uint256 `_value`. It transfers `_value`  - the number of tokens from `_from `to `_to` on behalf of the sender. The function checks if `_from` has sufficient balance and if the sender has sufficient allowance before executing the transfer and emits the `Transfer` event.
 
 In simple terms, this contract implements the ERC-20 interface and allows users to transfer tokens, approve other addresses to spend tokens, and transfer tokens from one address to another.
 
-Next we will write a test script to test the contract using Echidna.
+Next, we will write a test script to test the contract using Echidna.
 
-## Testing the Contract using Echidna
+## Testing the Contract Using Echidna
 
 Now that we have created our ERC-20 token contract, we can test it using Echidna. Echidna is a property-based testing tool for Ethereum smart contracts that allows you to generate and run test cases automatically.
 
@@ -195,7 +223,7 @@ describe("OxToken - Echidna", function () {
 Let's go through the code together.
 We defined a describe block for testing the `OxToken `contract and created a `beforeEach` hook to deploy a new instance of the contract before each test.
 
-In the first test, you will test the constructor by verifying that the name, symbol and total supply are set correctly.
+In the first test, you will test the constructor by verifying that the name, symbol, and total supply are set correctly.
 
 In the second test, you will test the transfer function by transferring tokens from the owner account to a new recipient account and verifying that the balance of the recipient account is updated correctly.
 
@@ -213,43 +241,43 @@ These tests cover the basic functionality of the ERC-20 token and ensure that th
 
 To deploy the OxToken contract on the Celo network, you can use the following steps:
 
-1. nstall the Celo CLI by following the instructions in the official documentation: https://docs.celo.org/getting-started/basics/install-the-celo-sdk.
+1. Install the Celo CLI by following the instructions in the official documentation: https://docs.celo.org/getting-started/basics/install-the-celo-sdk.
 
 2. Connect to a Celo network. You can either connect to the Alfajores testnet or the Celo mainnet. For example, to connect to the Alfajores testnet, you can run the following command:
 
-```bash
-celocli network:switch --network alfajores
-```
+    ```bash
+      celocli network:switch --network alfajores
+    ```
 
 3. Create a new account and fund it with some testnet or mainnet CELO using the Celo CLI. For example, to create a new account and fund it with 1 CELO on the Alfajores testnet, you can run the following commands:
 
-```bash
-celocli account:create
-celocli transfer:celo --from <YOUR_ACCOUNT_ADDRESS> --to <NEW_ACCOUNT_ADDRESS> --value 1
-```
+    ```bash
+    celocli account:create
+    celocli transfer:celo --from <YOUR_ACCOUNT_ADDRESS> --to <NEW_ACCOUNT_ADDRESS> --value 1
+    ```
 
-Replace <YOUR_ACCOUNT_ADDRESS> with your own account address and <NEW_ACCOUNT_ADDRESS> with the address of the new account that you just created.
+Replace <YOUR_ACCOUNT_ADDRESS> with your account address and <NEW_ACCOUNT_ADDRESS> with the address of the new account that you just created.
 
 4. Compile the `OxToken` contract using the Solidity compiler. You can use the `solc` command-line tool or any other Solidity compiler that you prefer. For example, to compile the contract using `solc`, you can run the following command:
 
-```bash
-solc OxToken.sol --bin --abi --optimize -o build/
-```
+    ```bash
+    solc OxToken.sol --bin --abi --optimize -o build/
+    ```
 5. Deploy the OxToken contract using the Celo CLI. You can use the `contract:deploy` command to deploy the contract. For example, to deploy the contract on the Alfajores testnet, you can run the following command:
 
-```bash
-celocli contract:deploy --from <YOUR_ACCOUNT_ADDRESS> --path build/OxToken.bin --constructor-args 1000000
-```
+    ```bash
+    celocli contract:deploy --from <YOUR_ACCOUNT_ADDRESS> --path build/OxToken.bin --constructor-args 1000000
+    ```
 
-Replace <YOUR_ACCOUNT_ADDRESS> with your own account address.
+Replace <YOUR_ACCOUNT_ADDRESS> with your account address.
 
 This will deploy the contract with an initial supply of 1,000,000 tokens.
 
 6. Verify the contract source code on the Celo blockchain explorer. To do this, you can use the `contract:verify` command of the Celo CLI. For example, to verify the contract on the Alfajores testnet, you can run the following command:
 
-```bash
-celocli contract:verify --address <CONTRACT_ADDRESS> --path OxToken.sol
-```
+    ```bash
+    celocli contract:verify --address <CONTRACT_ADDRESS> --path OxToken.sol
+    ```
 Replace <CONTRACT_ADDRESS> with the address of the deployed contract.
 
 Congratulations, you have now deployed and verified the OxToken contract on the Celo network
@@ -271,7 +299,7 @@ To avoid this issue, it is recommended to use the `transferFrom` function instea
 2. Use safe math libraries
 Arithmetic operations in Solidity can cause integer overflow or underflow, which can result in unexpected behavior or loss of funds. To avoid these issues, it is recommended to use safe math libraries, such as OpenZeppelin's SafeMath, when performing arithmetic operations.
 
-SafeMath provides functions for safe addition, subtraction, multiplication, and division, which ensure that the result of the operation is within the expected range and prevent integer overflow and underflow.
+SafeMath provides functions for safe addition, subtraction, multiplication, and division, which ensure that the result of the operation is within the expected range and prevents integer overflow and underflow.
 
 3. Keep the contract simple
 Complex contracts are more difficult to understand and can have more vulnerabilities. It is recommended to keep the contract simple and modular, with each function performing a specific task.
@@ -284,9 +312,9 @@ It is recommended to avoid using external calls whenever possible. If an externa
 5. Test the contract thoroughly
 Thorough testing is essential for ensuring the security and correctness of a smart contract. Automated testing tools, such as Echidna, can help identify vulnerabilities and ensure that the contract functions as expected.
 
-In addition to automated testing, manual testing and code reviews by multiple developers can help identify issues and ensure that the contract is secure and correct.
+In addition to automated testing, manual testing, and code reviews by multiple developers can help identify issues and ensure that the contract is secure and correct.
 
-And that is it! Congratulations for coming this far, and learning one of the important concept in blockchain-smart contract security.
+And that is it! Congratulations on coming this far, and learning one of the important concepts in blockchain-smart contract security.
 
 ## Conclusion
 
