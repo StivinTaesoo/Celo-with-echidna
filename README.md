@@ -41,6 +41,7 @@ Now that you have set up your development environment, you can create an ERC-20 
 For the sake of this tutorial, here is the code for an ERC-20 token contract:
 
 ```solidity
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.8;
 
 contract OxToken {
@@ -87,7 +88,7 @@ contract OxToken {
 
 The smart contract above implements the ERC-20 token standard, which is a popular standard used for creating fungible tokens on the Ethereum blockchain. The ERC-20 standard defines a set of functions and events that a smart contract must implement in order to be considered an ERC-20 compliant token.
 
-The contract defines a public string variable `name` and `symbol` that represent the name and symbol of the token respectively. It also defines a public uint256 variable `totalSupply` that represents the total supply of the token.
+The contract defines a public string variable `name` and `symbol` that represents the name and symbol of the token respectively. It also defines a public uint256 variable `totalSupply` that represents the total supply of the token.
 
 Also, there are two mapping data structures: `balanceOf` and `allowance`. The `balanceOf` mapping maps an address to a uint256 value that represents the balance of that address. The `allowance` mapping maps an address to another mapping, which maps an address to a uint256 value that represents the amount of tokens that the owner of the first address has allowed the second address to spend.
 
@@ -95,7 +96,7 @@ Again, there are two events: `Transfer` and `Approval`. The `Transfer` event is 
 
 The constructor takes a uint256 argument `_totalSupply` and sets the balance of the contract creator to `_totalSupply` and the totalSupply to `_totalSupply`.
 
-The are functions: `transfer`, `approve`, and `transferFrom.` The `transfer` function takes two arguments: an address `_to` and a uint256 `_value`. It transfers `_value` number of tokens from the sender's address to `_to`. The function checks if the sender has sufficient balance before executing the transfer and emits the `Transfer` event.
+The are three functions: `transfer`, `approve`, and `transferFrom.` The `transfer` function takes two arguments: an address `_to` and a uint256 `_value`. It transfers `_value` number of tokens from the sender's address to `_to`. The function checks if the sender has sufficient balance before executing the transfer and emits the `Transfer` event.
 
 The `approve` function takes two arguments: an address `_spender` and a uint256 `_value`. It approves `_spender` to spend `_value ` which is the number of tokens on behalf of the sender. The function emits the `Approval` event.
 
@@ -103,7 +104,7 @@ The `transferFrom` function takes three arguments: an address `_from`, an addres
 
 In simple terms, this contract implements the ERC-20 interface and allows users to transfer tokens, approve other addresses to spend tokens, and transfer tokens from one address to another.
 
-Next we will write a test script to test the contract using Echidna.
+Next, we will write a test script to test the contract using Echidna.
 
 ## Testing the Contract using Echidna
 
@@ -213,13 +214,13 @@ These tests cover the basic functionality of the ERC-20 token and ensure that th
 
 To deploy the OxToken contract on the Celo network, you can use the following steps:
 
-1. nstall the Celo CLI by following the instructions in the official documentation: https://docs.celo.org/getting-started/basics/install-the-celo-sdk.
+1. Install the Celo CLI by following the instructions in the official documentation: https://docs.celo.org/getting-started/basics/install-the-celo-sdk.
 
 2. Connect to a Celo network. You can either connect to the Alfajores testnet or the Celo mainnet. For example, to connect to the Alfajores testnet, you can run the following command:
 
-```bash
-celocli network:switch --network alfajores
-```
+  ```bash
+    celocli network:switch --network alfajores
+  ```
 
 3. Create a new account and fund it with some testnet or mainnet CELO using the Celo CLI. For example, to create a new account and fund it with 1 CELO on the Alfajores testnet, you can run the following commands:
 
@@ -271,7 +272,7 @@ To avoid this issue, it is recommended to use the `transferFrom` function instea
 2. Use safe math libraries
 Arithmetic operations in Solidity can cause integer overflow or underflow, which can result in unexpected behavior or loss of funds. To avoid these issues, it is recommended to use safe math libraries, such as OpenZeppelin's SafeMath, when performing arithmetic operations.
 
-SafeMath provides functions for safe addition, subtraction, multiplication, and division, which ensure that the result of the operation is within the expected range and prevent integer overflow and underflow.
+SafeMath provides functions for safe addition, subtraction, multiplication, and division, which ensure that the result of the operation is within the expected range and prevents integer overflow and underflow.
 
 3. Keep the contract simple
 Complex contracts are more difficult to understand and can have more vulnerabilities. It is recommended to keep the contract simple and modular, with each function performing a specific task.
@@ -286,7 +287,7 @@ Thorough testing is essential for ensuring the security and correctness of a sma
 
 In addition to automated testing, manual testing and code reviews by multiple developers can help identify issues and ensure that the contract is secure and correct.
 
-And that is it! Congratulations for coming this far, and learning one of the important concept in blockchain-smart contract security.
+And that is it! Congratulations on coming this far, and learning one of the important concepts in blockchain-smart contract security.
 
 ## Conclusion
 
