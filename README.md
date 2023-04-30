@@ -45,45 +45,94 @@ For the sake of this tutorial, here is the code for an ERC-20 token contract:
 pragma solidity ^0.8.8;
 
 contract OxToken {
-    string public name = "Ox Token";
-    string public symbol = "OXT";
-    uint256 public totalSupply;
+    string private _name;
+    string private _symbol;
+    uint256 private _totalSupply;
 
-    mapping(address => uint256) public balanceOf;
-    mapping(address => mapping(address => uint256)) public allowance;
+    mapping(address => uint256) private _balances;
+    mapping(address => mapping(address => uint256)) private _allowances;
 
     event Transfer(address indexed from, address indexed to, uint256 value);
     event Approval(address indexed owner, address indexed spender, uint256 value);
+    event Burn(address indexed from, uint256 value);
+    event Pause(bool isPaused);
 
-    constructor(uint256 _totalSupply) {
-        balanceOf[msg.sender] = _totalSupply;
-        totalSupply = _totalSupply;
+    bool private _paused;
+
+    constructor(string memory name_, string memory symbol_, uint256 totalSupply_) {
+        require(totalSupply_ > 0, "Total supply must be greater than zero");
+        _name = name_;
+        _symbol = symbol_;
+        _totalSupply = totalSupply_;
+        _balances[msg.sender] = totalSupply_;
+        emit Transfer(address(0), msg.sender, totalSupply_);
     }
 
-    function transfer(address _to, uint256 _value) public returns (bool success) {
-        require(balanceOf[msg.sender] >= _value, "Insufficient balance");
-        balanceOf[msg.sender] -= _value;
-        balanceOf[_to] += _value;
-        emit Transfer(msg.sender, _to, _value);
+    function name() public view returns (string memory) {
+        return _name;
+    }
+
+    function symbol() public view returns (string memory) {
+        return _symbol;
+    }
+
+    function totalSupply() public view returns (uint256) {
+        return _totalSupply;
+    }
+
+    function balanceOf(address account) public view returns (uint256) {
+        return _balances[account];
+    }
+
+    function allowance(address owner, address spender) public view returns (uint256) {
+        return _allowances[owner][spender];
+    }
+
+    function transfer(address to, uint256 value) public returns (bool) {
+        require(to != address(0), "Cannot send tokens to zero address");
+        require(!_paused, "Transfers are currently paused");
+        require(_balances[msg.sender] >= value, "Insufficient balance");
+        _balances[msg.sender] -= value;
+        _balances[to] += value;
+        emit Transfer(msg.sender, to, value);
         return true;
     }
 
-    function approve(address _spender, uint256 _value) public returns (bool success) {
-        allowance[msg.sender][_spender] = _value;
-        emit Approval(msg.sender, _spender, _value);
+    function approve(address spender, uint256 value) public returns (bool) {
+        require(spender != address(0), "Cannot approve zero address");
+        require(value <= _balances[msg.sender], "Insufficient balance to approve");
+        _allowances[msg.sender][spender] = value;
+        emit Approval(msg.sender, spender, value);
         return true;
     }
 
-    function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) {
-        require(balanceOf[_from] >= _value, "Insufficient balance");
-        require(allowance[_from][msg.sender] >= _value, "Insufficient allowance");
-        balanceOf[_from] -= _value;
-        balanceOf[_to] += _value;
-        allowance[_from][msg.sender] -= _value;
-        emit Transfer(_from, _to, _value);
+    function transferFrom(address from, address to, uint256 value) public returns (bool) {
+        require(to != address(0), "Cannot send tokens to zero address");
+        require(!_paused, "Transfers are currently paused");
+        require(_balances[from] >= value, "Insufficient balance");
+        require(_allowances[from][msg.sender] >= value, "Insufficient allowance");
+        _balances[from] -= value;
+        _balances[to] += value;
+        _allowances[from][msg.sender] -= value;
+        emit Transfer(from, to, value);
+        return true;
+    }
+
+    function burn(uint256 value) public returns (bool) {
+        require(_balances[msg.sender] >= value, "Insufficient balance to burn");
+        _balances[msg.sender] -= value;
+        _totalSupply -= value;
+        emit Burn(msg.sender, value);
+        return true;
+    }
+
+    function pause(bool isPaused_) public returns (bool) {
+        _paused = isPaused_;
+        emit Pause(isPaused_);
         return true;
     }
 }
+
 ```
 
 The smart contract above implements the ERC-20 token standard, which is a popular standard used for creating fungible tokens on the Ethereum blockchain. The ERC-20 standard defines a set of functions and events that a smart contract must implement in order to be considered an ERC-20 compliant token.
